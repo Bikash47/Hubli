@@ -1,5 +1,6 @@
 package com.personalassistant.bikash.hubli;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -8,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.personalassistant.bikash.hubli.fragment.CartFragment;
@@ -20,15 +22,14 @@ import com.personalassistant.bikash.hubli.reminder.MainActivityFragment;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ActionBar toolbar;
-
+   // private ActionBar toolbar;
+    private Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        toolbar = getSupportActionBar();
-
+        toolbar = (Toolbar)findViewById(R.id.toolbar);
+       // toolbar = getSupportActionBar();
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
@@ -55,9 +56,10 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 case R.id.navigation_gifts:
                     toolbar.setTitle("Reminder");
-                    fragment = new MainActivityFragment();
-                    loadFragment(fragment);
-                    return true;
+                    //fragment = new MainActivityFragment();
+                    //loadFragment(fragment);
+                    startActivity(new Intent(getApplicationContext(),MainActivityFragment.class));
+                   break;
                 case R.id.navigation_cart:
                     toolbar.setTitle("Cart");
                     fragment = new CartFragment();
@@ -87,4 +89,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.commit();
     }
 
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
 }

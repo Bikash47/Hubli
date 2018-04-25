@@ -17,9 +17,9 @@
 
 package com.personalassistant.bikash.hubli.reminder;
 
-import android.support.v4.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -39,6 +39,7 @@ import com.bignerdranch.android.multiselector.ModalMultiSelectorCallback;
 import com.bignerdranch.android.multiselector.MultiSelector;
 import com.bignerdranch.android.multiselector.SwappingHolder;
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.personalassistant.bikash.hubli.MainActivity;
 import com.personalassistant.bikash.hubli.R;
 
 import java.text.DateFormat;
@@ -51,7 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends AppCompatActivity {
     private RecyclerView mList;
     private SimpleAdapter mAdapter;
     private Toolbar mToolbar;
@@ -63,37 +64,19 @@ public class MainActivityFragment extends Fragment {
     private MultiSelector mMultiSelector = new MultiSelector();
     private AlarmReceiver mAlarmReceiver;
 
-
-
-    public MainActivityFragment() {
-        // Required empty public constructor
-    }
-
-    public static MainActivityFragment newInstance(String param1, String param2) {
-        MainActivityFragment fragment = new MainActivityFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.activity_for_main, container, false);
+        setContentView(R.layout.activity_for_main);
 
         // Initialize reminder database
-        rb = new ReminderDatabase(getActivity());
+        rb = new ReminderDatabase(getApplicationContext());
 
         // Initialize views
-        mToolbar = (Toolbar)view. findViewById(R.id.toolbar);
-        mAddReminderButton = (FloatingActionButton)view. findViewById(R.id.add_reminder);
-        mList = (RecyclerView)view. findViewById(R.id.reminder_list);
-        mNoReminderView = (TextView)view. findViewById(R.id.no_reminder_text);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mAddReminderButton = (FloatingActionButton) findViewById(R.id.add_reminder);
+        mList = (RecyclerView) findViewById(R.id.reminder_list);
+        mNoReminderView = (TextView) findViewById(R.id.no_reminder_text);
 
         // To check is there are saved reminders
         // If there are no reminders display a message asking the user to create reminders
@@ -111,7 +94,9 @@ public class MainActivityFragment extends Fragment {
         mList.setAdapter(mAdapter);
 
         // Setup toolbar
-
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
         mToolbar.setTitle(R.string.app_name);
 
         // On clicking the floating action button
@@ -125,15 +110,17 @@ public class MainActivityFragment extends Fragment {
 
         // Initialize alarm
         mAlarmReceiver = new AlarmReceiver();
-
-        return view;
     }
-
 
     // Create context menu for long press actions
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        getActivity().getMenuInflater().inflate(R.menu.menu_add_reminder, menu);
+        getMenuInflater().inflate(R.menu.menu_add_reminder, menu);
+    }
+
+    @Override
+    public void onBackPressed() {
+        startActivity(new Intent(MainActivityFragment.this, MainActivity.class));
     }
 
     // Multi select items in recycler view
@@ -141,7 +128,7 @@ public class MainActivityFragment extends Fragment {
 
         @Override
         public boolean onCreateActionMode(android.support.v7.view.ActionMode actionMode, Menu menu) {
-            getActivity().getMenuInflater().inflate(R.menu.menu_add_reminder, menu);
+            getMenuInflater().inflate(R.menu.menu_add_reminder, menu);
             return true;
         }
 
@@ -166,7 +153,7 @@ public class MainActivityFragment extends Fragment {
                             // Remove reminder from recycler view
                             mAdapter.removeItemSelected(i);
                             // Delete reminder alarm
-                            mAlarmReceiver.cancelAlarm(getActivity(), id);
+                            mAlarmReceiver.cancelAlarm(getApplicationContext(), id);
                         }
                     }
 
@@ -177,7 +164,7 @@ public class MainActivityFragment extends Fragment {
                     mAdapter.onDeleteItem(getDefaultItemCount());
 
                     // Display toast to confirm delete
-                    Toast.makeText(getActivity(),
+                    Toast.makeText(getApplicationContext(),
                             "Deleted",
                             Toast.LENGTH_SHORT).show();
 
@@ -214,7 +201,7 @@ public class MainActivityFragment extends Fragment {
 
         // Create intent to edit the reminder
         // Put reminder id as extra
-        Intent i = new Intent(getActivity(), ReminderEditActivity.class);
+        Intent i = new Intent(this, ReminderEditActivity.class);
         i.putExtra(ReminderEditActivity.EXTRA_REMINDER_ID, mStringClickID);
         startActivityForResult(i, 1);
     }
@@ -227,7 +214,7 @@ public class MainActivityFragment extends Fragment {
     // Recreate recycler view
     // This is done so that newly created reminders are displayed
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
 
         // To check is there are saved reminders
@@ -245,7 +232,7 @@ public class MainActivityFragment extends Fragment {
 
     // Layout manager for recycler view
     protected RecyclerView.LayoutManager getLayoutManager() {
-        return new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+        return new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
     }
 
     protected int getDefaultItemCount() {
@@ -253,11 +240,11 @@ public class MainActivityFragment extends Fragment {
     }
 
     // Create menu
-   /* @Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getActivity(). getMenuInflater().inflate(R.menu.main_menu, menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
-    }*/
+    }
 
     // Setup menu
     @Override
@@ -265,10 +252,12 @@ public class MainActivityFragment extends Fragment {
         switch (item.getItemId()) {
             // start licenses activity
             case R.id.action_licenses:
-                Intent intent = new Intent(getActivity(), LicencesActivity.class);
+                Intent intent = new Intent(this, LicencesActivity.class);
                 startActivity(intent);
                 return true;
-
+            case android.R.id.home:
+                onBackPressed();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -324,7 +313,7 @@ public class MainActivityFragment extends Fragment {
         }
 
         // Class for recycler view items
-        public  class ReminderItem {
+        public class ReminderItem {
             public String mTitle;
             public String mDateTime;
             public String mRepeat;
@@ -347,8 +336,8 @@ public class MainActivityFragment extends Fragment {
             DateFormat f = new SimpleDateFormat("dd/mm/yyyy hh:mm");
 
             public int compare(Object a, Object b) {
-                String o1 = ((DateTimeSorter)a).getDateTime();
-                String o2 = ((DateTimeSorter)b).getDateTime();
+                String o1 = ((DateTimeSorter) a).getDateTime();
+                String o2 = ((DateTimeSorter) b).getDateTime();
 
                 try {
                     return f.parse(o1).compareTo(f.parse(o2));
@@ -359,10 +348,10 @@ public class MainActivityFragment extends Fragment {
         }
 
         // UI and data class for recycler view items
-        public  class VerticalItemHolder extends SwappingHolder
+        public class VerticalItemHolder extends SwappingHolder
                 implements View.OnClickListener, View.OnLongClickListener {
             private TextView mTitleText, mDateAndTimeText, mRepeatInfoText;
-            private ImageView mActiveImage , mThumbnailImage;
+            private ImageView mActiveImage, mThumbnailImage;
             private ColorGenerator mColorGenerator = ColorGenerator.DEFAULT;
             private TextDrawable mDrawableBuilder;
             private SimpleAdapter mAdapter;
@@ -393,7 +382,7 @@ public class MainActivityFragment extends Fragment {
                     int mReminderClickID = IDmap.get(mTempPost);
                     selectReminder(mReminderClickID);
 
-                } else if(mMultiSelector.getSelectedPositions().isEmpty()){
+                } else if (mMultiSelector.getSelectedPositions().isEmpty()) {
                     mAdapter.setItemCount(getDefaultItemCount());
                 }
             }
@@ -401,9 +390,9 @@ public class MainActivityFragment extends Fragment {
             // On long press enter action mode with context menu
             @Override
             public boolean onLongClick(View v) {
-             /*   AppCompatActivity activity = MainActivityFragment.this;
+                AppCompatActivity activity = MainActivityFragment.this;
                 activity.startSupportActionMode(mDeleteMode);
-                mMultiSelector.setSelected(this, true);*/
+                mMultiSelector.setSelected(this, true);
                 return true;
             }
 
@@ -412,7 +401,7 @@ public class MainActivityFragment extends Fragment {
                 mTitleText.setText(title);
                 String letter = "A";
 
-                if(title != null && !title.isEmpty()) {
+                if (title != null && !title.isEmpty()) {
                     letter = title.substring(0, 1);
                 }
 
@@ -431,25 +420,25 @@ public class MainActivityFragment extends Fragment {
 
             // Set repeat views
             public void setReminderRepeatInfo(String repeat, String repeatNo, String repeatType) {
-                if(repeat.equals("true")){
+                if (repeat.equals("true")) {
                     mRepeatInfoText.setText("Every " + repeatNo + " " + repeatType + "(s)");
-                }else if (repeat.equals("false")) {
+                } else if (repeat.equals("false")) {
                     mRepeatInfoText.setText("Repeat Off");
                 }
             }
 
             // Set active image as on or off
-            public void setActiveImage(String active){
-                if(active.equals("true")){
+            public void setActiveImage(String active) {
+                if (active.equals("true")) {
                     mActiveImage.setImageResource(R.drawable.ic_notifications_on_white_24dp);
-                }else if (active.equals("false")) {
+                } else if (active.equals("false")) {
                     mActiveImage.setImageResource(R.drawable.ic_notifications_off_grey600_24dp);
                 }
             }
         }
 
         // Generate random test data
-        public  ReminderItem generateDummyData() {
+        public ReminderItem generateDummyData() {
             return new ReminderItem("1", "2", "3", "4", "5", "6");
         }
 
@@ -467,7 +456,7 @@ public class MainActivityFragment extends Fragment {
             List<String> RepeatTypes = new ArrayList<>();
             List<String> Actives = new ArrayList<>();
             List<String> DateAndTime = new ArrayList<>();
-            List<Integer> IDList= new ArrayList<>();
+            List<Integer> IDList = new ArrayList<>();
             List<DateTimeSorter> DateTimeSortList = new ArrayList<>();
 
             // Add details of all reminders in their respective lists
@@ -484,7 +473,7 @@ public class MainActivityFragment extends Fragment {
             int key = 0;
 
             // Add date and time as DateTimeSorter objects
-            for(int k = 0; k<Titles.size(); k++){
+            for (int k = 0; k < Titles.size(); k++) {
                 DateTimeSortList.add(new DateTimeSorter(key, DateAndTime.get(k)));
                 key++;
             }
@@ -495,7 +484,7 @@ public class MainActivityFragment extends Fragment {
             int k = 0;
 
             // Add data to each recycler view item
-            for (DateTimeSorter item:DateTimeSortList) {
+            for (DateTimeSorter item : DateTimeSortList) {
                 int i = item.getIndex();
 
                 items.add(new ReminderItem(Titles.get(i), DateAndTime.get(i), Repeats.get(i),
@@ -503,7 +492,7 @@ public class MainActivityFragment extends Fragment {
                 IDmap.put(k, IDList.get(i));
                 k++;
             }
-          return items;
+            return items;
         }
     }
 }

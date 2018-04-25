@@ -96,11 +96,10 @@ public class ReminderAddActivity extends AppCompatActivity implements
         mFAB2 = (FloatingActionButton) findViewById(R.id.starred2);
 
         // Setup Toolbar
-      /*  setSupportActionBar(mToolbar);
+        setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle(R.string.title_activity_add_reminder);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-*/
         // Initialize default values
         mActive = "true";
         mRepeat = "true";
